@@ -1,2 +1,2 @@
 # correl_one
-Datathon
+Correlation One datathon organized by Citadel.
