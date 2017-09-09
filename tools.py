@@ -87,6 +87,7 @@ def load_listings(loading_path='data/listings.csv'):
     listings_df = reformat_prices(listings_df, ['price'])
     listings_df = reformat_booleans(listings_df, ['has_availability', 'instant_bookable'])
     listings_df = expand_list_in_cell(listings_df, 'amenities')
+    listings_df = pd.get_dummies(listings_df, columns=['cancellation_policy'])
     return listings_df
 
 
