@@ -4,6 +4,7 @@ Contributors:
     - Louis Rémus
 """
 import logging
+
 import pandas as pd
 
 
@@ -54,7 +55,7 @@ def expand_list_in_cell(df, column_to_expand):
     # Generate the list by splitting
     df[column_to_expand] = df[column_to_expand].apply(lambda x: x.split(','))
     # Lower case
-    df[column_to_expand] = df[column_to_expand].apply(lambda x: [amenity.lower() for amenity in x])
+    df[column_to_expand] = df[column_to_expand].apply(lambda x: [amenity.lower().replace(' ', '_') for amenity in x])
 
     # List all tags
     all_tags = set()
@@ -62,16 +63,18 @@ def expand_list_in_cell(df, column_to_expand):
         all_tags = all_tags.union(set(value))
     # Cleaning
     all_tags.remove('')
-    all_tags.remove('translation missing: en.hosting_amenity_49')
-    all_tags.remove('translation missing: en.hosting_amenity_50')
+    if 'translation missing: en.hosting_amenity_49' in all_tags:
+        all_tags.remove('translation missing: en.hosting_amenity_49')
+    if 'translation missing: en.hosting_amenity_50' in all_tags:
+        all_tags.remove('translation missing: en.hosting_amenity_50')
     # Logging
-    logging.warning("len(all_tags) = {}".format(len(all_tags)))
+    logging.warning("You have expanded a column of {} tags".format(len(all_tags)))
 
     for tag in sorted(all_tags):
         df[tag] = df[column_to_expand].apply(lambda x: 1 if tag in x else 0)
     df.drop([column_to_expand], inplace=True, axis=1)
 
-    return df
+    return df, all_tags
 
 
 def load_listings(loading_path='data/listings.csv'):
@@ -86,12 +89,12 @@ def load_listings(loading_path='data/listings.csv'):
     listings_df = pd.read_csv(loading_path)
     listings_df = reformat_prices(listings_df, ['price'])
     listings_df = reformat_booleans(listings_df, ['has_availability', 'instant_bookable'])
-    listings_df = expand_list_in_cell(listings_df, 'amenities')
+    listings_df, all_amenities = expand_list_in_cell(listings_df, 'amenities')
     listings_df = pd.get_dummies(listings_df, columns=['cancellation_policy'])
-    return listings_df
+    return listings_df, all_amenities
 
 
 if __name__ == '__main__':
     # For testing purposes
-    listings_df = load_listings()
+    listings_df_ = load_listings()
     print('main is over')
