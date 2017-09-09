@@ -116,3 +116,4 @@ __pycache__
 .idea
 .ipynb_checkpoints
 /Forecasts/demandtools/demandtools.egg-info/
+data/
