@@ -6,6 +6,7 @@ Contributors:
 import logging
 
 import pandas as pd
+from sklearn.linear_model import LassoCV
 
 
 def reformat_prices(df, columns):
@@ -77,6 +78,21 @@ def expand_list_in_cell(df, column_to_expand):
     return df, all_tags
 
 
+def print_null_lasso(x_train, y_train):
+    """
+    Gives features with zero feature importance
+    :return: (non null columns, null columns)
+    """
+    regressor = LassoCV()
+    regressor.fit(x_train, y_train.values.reshape(-1))
+    # Select null coefficients
+    boolean_mask = regressor.coef_ == 0
+    print('Lasso study:\n{0}'.format(regressor))
+    print('Non null-coefficient columns:\n\t{0}'.format('\n\t'.join(x_train.columns[~boolean_mask].tolist())))
+    print('Null-coefficient columns:\n\t{0}'.format('\n\t'.join(x_train.columns[boolean_mask].tolist())))
+    return x_train.columns[~boolean_mask].tolist(), x_train.columns[boolean_mask].tolist()
+
+
 def load_listings(loading_path='data/listings.csv'):
     """
     Wrap-up function
@@ -95,5 +111,16 @@ def load_listings(loading_path='data/listings.csv'):
 
 if __name__ == '__main__':
     # For testing purposes
-    listings_df_ = load_listings()
+    listings_df_, all_amenities_ = load_listings()
+    reg_data = listings_df_.select_dtypes(include=['int64', 'float64'])
+
+    columns_to_drop = ['latitude', 'longitude', 'host_id', 'id']
+    # Dropping specific columns
+    reg_data.drop(columns_to_drop, inplace=True, axis=1)
+    # Dropping NaNs
+    reg_data.dropna(inplace=True)
+
+    y = reg_data['price']
+    x = reg_data.drop(['price'], axis=1)
+    print_null_lasso(x_train=x, y_train=y)
     print('main is over')
