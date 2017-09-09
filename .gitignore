@@ -99,3 +99,20 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# Personal
+.DS_Store
+__pycache__
+*.pickle
+*.pyc
+*.log
+*.log.*
+*.html
+*.csv
+*.pdf
+*.pptx
+*.npy
+*.xlsx
+.idea
+.ipynb_checkpoints
+/Forecasts/demandtools/demandtools.egg-info/
